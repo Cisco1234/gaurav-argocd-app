@@ -1,0 +1,293 @@
+
+<html>
+<head>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.js"></script>
+<link
+	href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+	crossorigin="anonymous">
+<title>Spring Boot AngularJS example</title>
+<script type="text/javascript">
+	var app = angular.module("CustomerManagement", []);
+
+	//Controller Part
+	app
+			.controller(
+					"CustomerController",
+					function($scope, $http) {
+
+						$scope.customers = [];
+						$scope.errvar = '';
+						$scope.delusermessage = '';
+						$scope.customerForm = {
+							id : -1,
+							customerName : "",
+							email : ""
+						};
+
+						_userServiceBackendConnectivity();
+						//Now load the data from server
+						_refreshCustomerData();
+
+						//HTTP POST/PUT methods for add/edit customer 
+						// with the help of id, we are going to find out whether it is put or post operation
+
+						$scope.submitCustomer = function() {
+
+							var method = "";
+							var url = "";
+								method = "POST";
+								url = '/addCustomer';
+
+							$http({
+								method : method,
+								url : url,
+								data : angular.toJson($scope.customerForm),
+								headers : {
+									'Content-Type' : 'application/json'
+								}
+							}).then(_success, _error);
+						};
+
+						//HTTP DELETE- delete customer by Id
+						$scope.deleteCustomer = function(customer) {
+							$http({
+								method : 'DELETE',
+								url : '/deleteCustomer/' + customer.id
+							})
+									.then(
+											function successCallback(response) {
+												console.log(response.data);
+												if (response.data.message === 'FAIL') {
+													$scope.delusermessage = 'Something went wrong in deletion Operation. Please connect admin';
+												} else if (response.data.message === 'SUCCESS') {
+													$scope.delusermessage = 'User deleted successfully.';
+												}
+												console
+														.log("scope.delusermessage"
+																+ $scope.delusermessage);
+												_refreshCustomerData();
+											},
+											function errorCallback(response) {
+												console
+														.log(response.statusText);
+
+											});
+						};
+
+						// In case of edit, populate form fields and assign form.id with customer id
+						$scope.editCustomer = function(customer) {
+
+							$scope.customerForm.customerName = customer.name;
+							$scope.customerForm.email = customer.email;
+							$scope.customerForm.id = customer.id;
+						};
+
+						$scope.dataReload = function(){
+							_refreshCustomerData();
+							$scope.delusermessage = '';
+						} 
+						function _userServiceBackendConnectivity() {
+							$scope.errvar = '';
+							$http({
+								method : 'GET',
+								url : '/userServiceBackendConnectivity'
+							})
+									.then(
+											function successCallback(response) {
+												console.log(response.data);
+												if (response.data.message === 'DOWN') {
+													$scope.errvar = 'DISCONNECTED';
+													console.log("scope.errvar"
+															+ $scope.errvar);
+												}else{
+													$scope.errvar = 'CONNECTED';
+												}
+											},
+											function errorCallback(response) {
+												$scope.errvar = 'No Connectivity with Back-end System';
+
+											});
+						}
+						/* Private Methods */
+						//HTTP GET- get all customers collection
+						function _refreshCustomerData() {
+							$http({
+								method : 'GET',
+								url : '/getAllCustomers'
+							}).then(function successCallback(response) {
+								$scope.customers = response.data;
+								console.log(response.data);
+							}, function errorCallback(response) {
+								console.log(response.statusText);
+							});
+						}
+
+						function _success(response) {
+							_refreshCustomerData();
+							_clearFormData()
+						}
+
+						function _error(response) {
+							console.log(response.statusText);
+						}
+
+						//Clear the form
+						function _clearFormData() {
+							$scope.customerForm.id = -1;
+							$scope.customerForm.customerName = "";
+							$scope.customerForm.email = "";
+
+						}
+						;
+					});
+</script>
+<style>
+.blue-button {
+	background: #25A6E1;
+	filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#25A6E1',
+		endColorstr='#188BC0', GradientType=0);
+	padding: 3px 5px;
+	color: #fff;
+	font-family: 'Helvetica Neue', sans-serif;
+	font-size: 12px;
+	border-radius: 2px;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 4px;
+	border: 1px solid #1A87B9
+}
+
+.red-button {
+	background: #CD5C5C;
+	padding: 3px 5px;
+	color: #fff;
+	font-family: 'Helvetica Neue', sans-serif;
+	font-size: 12px;
+	border-radius: 2px;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 4px;
+	border: 1px solid #CD5C5C
+}
+
+table {
+	font-family: "Helvetica Neue", Helvetica, sans-serif;
+	width: 50%;
+}
+
+caption {
+	text-align: left;
+	color: silver;
+	font-weight: bold;
+	text-transform: uppercase;
+	padding: 5px;
+}
+
+th {
+	background: SteelBlue;
+	color: white;
+}
+
+tbody tr:nth-child(even) {
+	background: WhiteSmoke;
+}
+
+tbody tr td:nth-child(2) {
+	text-align: center;
+}
+
+tbody tr td:nth-child(3), tbody tr td:nth-child(4) {
+	text-align: center;
+	font-family: monospace;
+}
+
+tfoot {
+	background: SeaGreen;
+	color: white;
+	text-align: right;
+}
+
+tfoot tr th:last-child {
+	font-family: monospace;
+}
+
+td, th {
+	border: 1px solid gray;
+	width: 25%;
+	text-align: left;
+	padding: 5px 10px;
+}
+</style>
+<head>
+<body ng-app="CustomerManagement" ng-controller="CustomerController">
+	<h1 align="center">Customer Profile Management</h1>
+
+
+	<form ng-submit="submitCustomer()">
+		<table align="center">
+
+			<tr>
+				<th colspan="2">Add/Edit customer</th>
+			</tr>
+			<tr>
+				<td>Customer Name</td>
+				<td><input type="text" ng-model="customerForm.name" /></td>
+			</tr>
+			<tr>
+				<td>Email</td>
+				<td><input type="text" ng-model="customerForm.email" /></td>
+			</tr>
+			<tr>
+				<td colspan="2"><input type="submit" value="Submit"
+					class="blue-button" /></td>
+			</tr>
+		</table>
+	</form>
+	<div  ng-if="delusermessage" class="alert alert-success" align="center"
+		role="alert">{{ delusermessage }} <button type="button" class="btn btn-success" ng-click="dataReload()">Refresh Data</button></div>
+	<table align="center">
+		<tr>
+
+			<th>Customer Name</th>
+			<th>Email</th>
+			<th>Operations</th>
+
+		</tr>
+
+		<tr ng-repeat="customer in customers">
+
+			<td>{{ customer.name }}</td>
+			<td>{{ customer.email }}</td>
+
+			<td><a ng-click="editCustomer(customer)" class="blue-button">Edit</a>
+				| <a ng-click="deleteCustomer(customer)" class="red-button">Delete</a></td>
+		</tr>
+
+	</table>
+
+	<br />
+	<br />
+	<br />
+	<br />
+	
+	<div align="center" ng-if="errvar === 'DISCONNECTED'"
+		class=" p-3 mb-2 bg-danger text-white">
+		<p class="text-center">No Connectivity with Back-end System. Please connect admin !!!</p>
+	</div>
+	<div ng-if="errvar === 'CONNECTED'" class="p-3 mb-2 bg-success text-white ">
+		<p class="text-center">Connectivity established with backend
+			system.</p>
+	</div>
+	<br />
+	<br />
+
+	<div class="text-center ">
+		<h3>Connect with us:</h3>
+		<p>
+			For support or any questions: <br></br>Email us at <a
+				href="mailto:RajeshKum@hcl.com" target="_blank">RajeshKum@hcl.com</a>
+		</p>
+	</div>
+</body>
+</html>

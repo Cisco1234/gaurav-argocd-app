@@ -1,0 +1,2 @@
+server.port=5000
+service.emart.url=http://localhost:5001/

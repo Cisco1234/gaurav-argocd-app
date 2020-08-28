@@ -1,0 +1,24 @@
+
+######## RESOURCE CREATION ######
+oc create -f https://raw.githubusercontent.com/abhiroopghatak/frontend-emart/master/tekton/pipeline-resource.yaml
+
+######## TASK CREATION ######
+oc create -f https://raw.githubusercontent.com/abhiroopghatak/frontend-emart/master/tekton/apply-manifests-task.yml
+
+oc create -f https://raw.githubusercontent.com/abhiroopghatak/frontend-emart/master/tekton/update-deployment-task.yml
+
+#########  PIPELINE CREATION ########
+oc create -f https://raw.githubusercontent.com/abhiroopghatak/frontend-emart/master/tekton/Pipeline-build-deploy.yml
+
+##### backend-end api build and deploy pipeline execution #####
+
+tkn pipeline start build-and-deploy \
+    -r git-repo=backend-repo \
+    -r image=backend-api-image \
+    -p deployment-name=emart-backend
+##### front-end api build and deploy pipeline execution #####
+
+tkn pipeline start build-and-deploy \
+    -r git-repo=frontend-repo \
+    -r image=frontend-api-image \
+    -p deployment-name=emart-frontend

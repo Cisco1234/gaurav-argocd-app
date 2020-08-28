@@ -1,0 +1,41 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: backend-repo
+spec:
+  type: git
+  params:
+  - name: url
+    value: http://github.com/abhiroopghatak/emart-backend.git
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: backend-api-image
+spec:
+  type: image
+  params:
+  - name: url
+    value: image-registry.openshift-image-registry.svc:5000/cicd/emart-backend:latest
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: frontend-repo
+spec:
+  type: git
+  params:
+  - name: url
+    value: http://github.com/abhiroopghatak/frontend-emart.git
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: frontend-api-image
+spec:
+  type: image
+  params:
+  - name: url
+    value: image-registry.openshift-image-registry.svc:5000/cicd/emart-frontend:latest
+    ###############
